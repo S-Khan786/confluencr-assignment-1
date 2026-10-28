@@ -4,6 +4,14 @@ A robust, production-grade financial ledger REST API built with **Node.js**, **E
 
 ---
 
+## 🌐 Live Deployment & Links
+* **Live API Base URL:** [https://confluencr-assignment-1.onrender.com](https://confluencr-assignment-1.onrender.com)
+* **Live Health Check:** [https://confluencr-assignment-1.onrender.com/health](https://confluencr-assignment-1.onrender.com/health)
+* **GitHub Repository:** [https://github.com/S-Khan786/confluencr-assignment-1](https://github.com/S-Khan786/confluencr-assignment-1)
+* **Postman Collection:** Located at [`docs/postman_collection.json`](docs/postman_collection.json)
+
+---
+
 ## 📋 Table of Contents
 1. [Overview & Highlights](#-overview--highlights)
 2. [Tech Stack](#-tech-stack)
@@ -11,6 +19,7 @@ A robust, production-grade financial ledger REST API built with **Node.js**, **E
 4. [Getting Started (Local Setup)](#-getting-started-local-setup)
 5. [Running Tests](#-running-tests)
 6. [API Documentation](#-api-documentation)
+   - [0. Health & Status Checks](#0-health--status-checks)
    - [1. Create Account](#1-create-account)
    - [2. Get Account Balance](#2-get-account-balance)
    - [3. Add Transaction](#3-add-transaction)
@@ -25,7 +34,7 @@ A robust, production-grade financial ledger REST API built with **Node.js**, **E
 
 Financial ledgers require strict guarantees that traditional CRUD applications do not:
 * **ACID Atomicity:** Writing a transaction record and updating an account balance must be atomic. If anything fails midway, all state is rolled back.
-* **Idempotency (No Double-Spending):** Each transaction is protected by a composite unique constraint `(account_id, reference_id)`. Re-submitting the same reference ID for the same account is rejected without altering the balance.
+* **Idempotency (No Double-Spending):** Each transaction is protected by a composite unique constraint `(account_id, reference_id)`. Re-submitting the same reference ID for the same account is safely rejected without altering the balance.
 * **Immutability:** Financial ledger entries are append-only. There are strictly **no** `PUT`, `PATCH`, or `DELETE` endpoints for transactions.
 * **Zero Negative Balances:** Debit operations are strictly evaluated against the current balance within the transaction lock and rejected if funds are insufficient.
 * **Clean Architecture:** Modular separation of concerns into Controllers, Services, Repositories, and Request Validators.
@@ -38,7 +47,7 @@ Financial ledgers require strict guarantees that traditional CRUD applications d
 * **Language:** TypeScript
 * **Web Framework:** Express.js
 * **ORM:** Prisma
-* **Database:** SQLite (zero-config local setup; easily switchable to PostgreSQL/Supabase)
+* **Database:** PostgreSQL (Render Production Database) / SQLite compatible
 * **Schema Validation:** Zod
 * **Testing:** Vitest + Supertest
 
@@ -59,9 +68,10 @@ confluencr_assignment_1/
 │   ├── app.ts                       # Express application wiring & middleware configuration
 │   └── server.ts                    # HTTP server bootstrap & graceful shutdown listeners
 ├── prisma/
+│   ├── migrations/                  # Version-controlled SQL migration files
 │   └── schema.prisma                # Database schema, indexes, and unique constraints
 ├── tests/
-│   └── ledger.test.ts               # 20 integration test cases
+│   └── ledger.test.ts               # Integration test cases
 ├── docs/
 │   └── postman_collection.json      # Ready-to-import Postman collection
 ├── .env.example                     # Environment variables template
@@ -79,8 +89,8 @@ confluencr_assignment_1/
 
 ### 1. Clone & Install Dependencies
 ```bash
-git clone <your-repo-url>
-cd confluencr_assignment_1
+git clone https://github.com/S-Khan786/confluencr-assignment-1.git
+cd confluencr-assignment-1
 npm install
 ```
 
@@ -89,12 +99,17 @@ Copy `.env.example` to `.env`:
 ```bash
 cp .env.example .env
 ```
-*(Default configuration uses a local SQLite database at `file:./dev.db` with no external setup required).*
+Set your `DATABASE_URL` in `.env` to your PostgreSQL database (e.g., from Render, Supabase, or local PostgreSQL):
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE_NAME"
+```
 
 ### 3. Initialize the Database
-Generate the Prisma Client and synchronize the database schema:
+Run migrations to set up the database schema:
 ```bash
 npm run prisma:push
+# or
+npx prisma migrate deploy
 ```
 
 ### 4. Run the Application
@@ -114,7 +129,7 @@ The API will be available at `http://localhost:3000`.
 
 ## 🧪 Running Tests
 
-The test suite covers 20 integration tests verifying account creation, credit/debit balances, overdraft rejections, duplicate reference ID idempotency, pagination, sorting, and bonus money transfers.
+The test suite covers integration tests verifying account creation, credit/debit balances, overdraft rejections, duplicate reference ID idempotency, pagination, sorting, and bonus money transfers.
 
 ```bash
 npm test
@@ -124,10 +139,28 @@ npm test
 
 ## 📖 API Documentation
 
-### Base URL: `http://localhost:3000`
+### Base URL:
+* **Local:** `http://localhost:3000`
+* **Production:** `https://confluencr-assignment-1.onrender.com`
 
 ### Postman Collection
 A pre-configured Postman collection is available at `docs/postman_collection.json`. Simply open Postman and click **Import**.
+
+---
+
+### 0. Health & Status Checks
+Checks whether the service is running.
+
+* **Endpoints:** `GET /` and `GET /health`
+* **Success Response (200 OK):**
+```json
+{
+  "status": "UP",
+  "message": "Transaction Ledger API is running successfully",
+  "timestamp": "2026-10-28T05:42:28.499Z",
+  "service": "Transaction Ledger API"
+}
+```
 
 ---
 
@@ -365,5 +398,5 @@ Atomically moves funds from a source account to a destination account.
 3. **Reference ID Scope:**
    * `reference_id` is unique *per account* for individual transactions (meaning Account A and Account B can both use `REF-001` independently without collision).
    * For transfers between accounts, `reference_id` is globally unique.
-4. **Database Portability:**
-   * SQLite was chosen as the default for frictionless local evaluation with zero external dependencies. The Prisma schema can be pointed to PostgreSQL / Supabase simply by updating the provider and `DATABASE_URL`.
+4. **Production Database:**
+   * The live production application is deployed on Render and backed by a PostgreSQL database instance.
