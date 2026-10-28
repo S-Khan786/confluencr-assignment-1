@@ -1,0 +1,51 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Account {
+  id                   String        @id @default(uuid())
+  name                 String
+  balance              Float         @default(0.0)
+  createdAt            DateTime      @default(now()) @map("created_at")
+  transactions         Transaction[]
+  outgoingTransfers    Transfer[]    @relation("SourceTransfers")
+  incomingTransfers    Transfer[]    @relation("DestinationTransfers")
+
+  @@map("accounts")
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  accountId   String   @map("account_id")
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  type        String   // "credit" | "debit"
+  amount      Float
+  description String
+  referenceId String   @map("reference_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([accountId, referenceId], name: "account_reference_unique")
+  @@index([accountId, createdAt(sort: Desc)])
+  @@map("transactions")
+}
+
+model Transfer {
+  id                   String   @id @default(uuid())
+  sourceAccountId      String   @map("source_account_id")
+  destinationAccountId String   @map("destination_account_id")
+  amount               Float
+  referenceId          String   @unique @map("reference_id")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  sourceAccount        Account  @relation("SourceTransfers", fields: [sourceAccountId], references: [id], onDelete: Restrict)
+  destinationAccount   Account  @relation("DestinationTransfers", fields: [destinationAccountId], references: [id], onDelete: Restrict)
+
+  @@index([sourceAccountId])
+  @@index([destinationAccountId])
+  @@map("transfers")
+}
