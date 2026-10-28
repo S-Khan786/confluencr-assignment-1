@@ -13,11 +13,18 @@ describe('Transaction Ledger API Integration Tests', () => {
     await prisma.account.deleteMany({});
   });
 
-  describe('1. Health Check', () => {
+  describe('1. Health & Root Checks', () => {
     it('should return 200 UP on /health', async () => {
       const res = await request(app).get('/health');
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('UP');
+    });
+
+    it('should return 200 UP on root path /', async () => {
+      const res = await request(app).get('/');
+      expect(res.status).toBe(200);
+      expect(res.body.status).toBe('UP');
+      expect(res.body.message).toContain('running');
     });
   });
 

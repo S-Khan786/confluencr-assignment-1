@@ -16,14 +16,18 @@ export const createApp = (): Application => {
   app.use(cors());
   app.use(express.json());
 
-  // Health check endpoint
-  app.get('/health', (_req: Request, res: Response) => {
+  // Root and Health check endpoints
+  const healthResponse = (_req: Request, res: Response) => {
     res.status(200).json({
       status: 'UP',
+      message: 'Transaction Ledger API is running successfully',
       timestamp: new Date().toISOString(),
       service: 'Transaction Ledger API'
     });
-  });
+  };
+
+  app.get('/', healthResponse);
+  app.get('/health', healthResponse);
 
   // API Routes
   app.use('/accounts', accountRoutes);
