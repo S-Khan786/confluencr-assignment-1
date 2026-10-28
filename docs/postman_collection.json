@@ -1,0 +1,140 @@
+{
+  "info": {
+    "name": "Transaction Ledger API - Confluencr Assessment",
+    "description": "Comprehensive Postman collection for testing the Transaction Ledger API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "1. Create Account",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Mohammad Sahil Khan\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/accounts",
+          "host": ["{{baseUrl}}"],
+          "path": ["accounts"]
+        }
+      }
+    },
+    {
+      "name": "2. Get Account Balance",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/accounts/{{accountId}}/balance",
+          "host": ["{{baseUrl}}"],
+          "path": ["accounts", "{{accountId}}", "balance"]
+        }
+      }
+    },
+    {
+      "name": "3. Add Transaction (Credit)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"credit\",\n  \"amount\": 100.00,\n  \"description\": \"Initial account funding\",\n  \"reference_id\": \"REF-CREDIT-001\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/accounts/{{accountId}}/transactions",
+          "host": ["{{baseUrl}}"],
+          "path": ["accounts", "{{accountId}}", "transactions"]
+        }
+      }
+    },
+    {
+      "name": "4. Add Transaction (Debit)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"debit\",\n  \"amount\": 30.00,\n  \"description\": \"Coffee purchase\",\n  \"reference_id\": \"REF-DEBIT-001\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/accounts/{{accountId}}/transactions",
+          "host": ["{{baseUrl}}"],
+          "path": ["accounts", "{{accountId}}", "transactions"]
+        }
+      }
+    },
+    {
+      "name": "5. Get Transaction History (Paginated & Filtered)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/accounts/{{accountId}}/transactions?type=credit&page=1&limit=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["accounts", "{{accountId}}", "transactions"],
+          "query": [
+            { "key": "type", "value": "credit" },
+            { "key": "page", "value": "1" },
+            { "key": "limit", "value": "10" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "6. Bonus: Transfer Money",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source_account_id\": \"{{sourceAccountId}}\",\n  \"destination_account_id\": \"{{destinationAccountId}}\",\n  \"amount\": 25.00,\n  \"reference_id\": \"TR-TRANSFER-001\",\n  \"description\": \"Peer-to-peer payment\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/transfers",
+          "host": ["{{baseUrl}}"],
+          "path": ["transfers"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "accountId",
+      "value": "REPLACE_WITH_ACCOUNT_UUID"
+    },
+    {
+      "key": "sourceAccountId",
+      "value": "REPLACE_WITH_SOURCE_UUID"
+    },
+    {
+      "key": "destinationAccountId",
+      "value": "REPLACE_WITH_DEST_UUID"
+    }
+  ]
+}
